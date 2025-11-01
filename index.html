@@ -1,119 +1,689 @@
 <!doctype html>
 <html lang="es">
-<head>
+ <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Página Estrellada</title>
+  <title>Cosas</title>
+  <script src="/_sdk/element_sdk.js"></script>
   <style>
-    /* Fondo negro con estrellas */
     body {
+      box-sizing: border-box;
       margin: 0;
-      height: 100vh;
-      background: black;
+      padding: 0;
+      height: 100%;
       overflow-x: hidden;
-      color: white;
-      font-family: Arial, sans-serif;
-      position: relative;
-      cursor: none; /* ocultar cursor original */
+      overflow-y: auto;
+      background: #000000;
+      cursor: none;
+      font-family: 'Arial', sans-serif;
     }
 
-    /* Crear el efecto de estrellas */
-    body::before {
-      content: "";
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: radial-gradient(white 1px, transparent 1px);
-      background-size: 3px 3px;
-      opacity: 0.5;
-      pointer-events: none;
+    html {
+      height: 100%;
     }
 
-    /* Cursor personalizado: punto blanco */
-    .cursor {
+    #custom-cursor {
       position: fixed;
-      width: 8px;
-      height: 8px;
+      width: 12px;
+      height: 12px;
       background: white;
       border-radius: 50%;
       pointer-events: none;
+      z-index: 10000;
       transform: translate(-50%, -50%);
-      z-index: 9999;
+      transition: transform 0.1s ease;
     }
 
-    /* Contenedor principal */
-    .container {
+    #stars-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    #main-menu {
+      position: relative;
+      z-index: 2;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      height: 100%;
       gap: 20px;
+    }
+
+    #main-title {
+      color: white;
+      font-size: 48px;
+      margin-bottom: 40px;
+      text-align: center;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+
+    .nav-button {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid white;
+      color: white;
+      padding: 20px 60px;
+      font-size: 24px;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      min-width: 300px;
       text-align: center;
     }
 
-    /* Botones */
-    .btn {
-      padding: 12px 24px;
-      border: 1px solid white;
-      background: transparent;
+    .nav-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    }
+
+    .section {
+      position: relative;
+      z-index: 2;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100%;
+      padding: 40px;
+      padding-top: 60px;
+    }
+
+    .section.active {
+      display: flex;
+    }
+
+    .section-title {
       color: white;
-      border-radius: 8px;
+      font-size: 56px;
+      margin-bottom: 40px;
+      text-align: center;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+
+    .section-content {
+      color: white;
+      font-size: 20px;
+      text-align: center;
+      max-width: 800px;
+      line-height: 1.6;
+      margin-bottom: 60px;
+    }
+
+    .back-button {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid white;
+      color: white;
+      padding: 15px 40px;
       font-size: 18px;
-      transition: 0.3s;
-      cursor: none; /* usar el punto blanco */
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
     }
 
-    .btn:hover {
-      background: white;
-      color: black;
-      transform: scale(1.1);
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
     }
 
-    /* Secciones */
-    section {
-      height: 100vh;
+    .valorant-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .image-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .image-placeholder {
+      width: 300px;
+      height: 200px;
+      border: 2px dashed white;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
-      scroll-snap-align: start;
+      color: white;
+      font-size: 18px;
+      background: rgba(255, 255, 255, 0.05);
     }
 
-    html {
-      scroll-behavior: smooth;
-      scroll-snap-type: y mandatory;
+    .uploaded-image {
+      width: 300px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 2px solid white;
+    }
+
+    .upload-button {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid white;
+      color: white;
+      padding: 10px 30px;
+      font-size: 16px;
+      border-radius: 25px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .upload-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+
+    .config-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      width: 100%;
+    }
+
+    .config-label {
+      color: white;
+      font-size: 32px;
+      margin: 0;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+
+    .config-text-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      width: 100%;
+    }
+
+    .config-text {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid white;
+      color: white;
+      padding: 15px;
+      font-size: 16px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 500px;
+      min-height: 60px;
+      resize: none;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .copy-button {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid white;
+      color: white;
+      padding: 10px 25px;
+      font-size: 16px;
+      border-radius: 25px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+
+    .minecraft-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .minecraft-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .minecraft-label {
+      color: white;
+      font-size: 28px;
+      margin: 0;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+
+    .clickable-image {
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .clickable-image:hover {
+      transform: scale(1.05);
+    }
+
+    .image-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 20000;
+    }
+
+    .modal-image {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+      border: 2px solid white;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 20001;
+    }
+
+    .close-modal:hover {
+      color: #ccc;
+    }
+
+    .links-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .social-links {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .social-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid white;
+      color: white;
+      padding: 20px 30px;
+      font-size: 20px;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .social-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    }
+
+    .social-text {
+      font-weight: bold;
     }
   </style>
-</head>
-<body>
-  <div class="cursor"></div>
-
-  <div class="container" id="inicio">
-    <h1>🌠 Bienvenido a la Página Estrellada 🌠</h1>
-    <button class="btn" onclick="scrollToSection('seccion1')">Sección 1</button>
-    <button class="btn" onclick="scrollToSection('seccion2')">Sección 2</button>
-    <button class="btn" onclick="scrollToSection('seccion3')">Sección 3</button>
-    <button class="btn" onclick="scrollToSection('seccion4')">Sección 4</button>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div id="custom-cursor"></div>
+  <div id="stars-container"></div>
+  <div id="main-menu">
+   <h1 id="main-title">Configuracion</h1><button class="nav-button" onclick="showSection('section1')">Valorant</button> <button class="nav-button" onclick="showSection('section2')">Minecraft</button> <button class="nav-button" onclick="showSection('section3')">Links</button>
   </div>
-
-  <section id="seccion1" style="background:black;">🌌 Esta es la Sección 1 🌌</section>
-  <section id="seccion2" style="background:black;">🌠 Esta es la Sección 2 🌠</section>
-  <section id="seccion3" style="background:black;">✨ Esta es la Sección 3 ✨</section>
-  <section id="seccion4" style="background:black;">🚀 Esta es la Sección 4 🚀</section>
-
+  <div id="section1" class="section">
+   <h2 class="section-title">Valorant</h2>
+   <div class="valorant-content">
+    <div class="image-container">
+     <div class="image-placeholder" id="valorant-placeholder"><span>📷 Agregar Imagen</span>
+     </div><input type="file" id="valorant-image" accept="image/*" style="display: none;"> <button class="upload-button" onclick="document.getElementById('valorant-image').click()">Subir Imagen</button>
+    </div>
+    <div class="config-section">
+     <h3 class="config-label">Mira</h3>
+     <div class="config-text-container"><textarea class="config-text" readonly>0;s;1;P;c;5;o;0.94;d;1;z;3;f;0;0b;0;1b;0;S;s;0.865;o;1</textarea> <button class="copy-button" onclick="copyConfigText()">Copiar</button>
+     </div>
+    </div>
+   </div>
+   <div style="margin-top: 60px;"><button class="back-button" onclick="showMenu()">← Volver al Menú</button>
+   </div>
+  </div>
+  <div id="section2" class="section">
+   <h2 class="section-title">Minecraft</h2>
+   <div class="minecraft-content">
+    <div class="minecraft-section">
+     <h3 class="minecraft-label">Sensibilidad</h3>
+     <div class="image-container">
+      <div class="image-placeholder" id="sensitivity-placeholder"><span>📷 Agregar Imagen</span>
+      </div><input type="file" id="sensitivity-image" accept="image/*" style="display: none;"> <button class="upload-button" onclick="document.getElementById('sensitivity-image').click()">Subir Imagen</button>
+     </div>
+    </div>
+    <div class="minecraft-section">
+     <h3 class="minecraft-label">Chat</h3>
+     <div class="image-container">
+      <div class="image-placeholder" id="chat-placeholder"><span>📷 Agregar Imagen</span>
+      </div><input type="file" id="chat-image" accept="image/*" style="display: none;"> <button class="upload-button" onclick="document.getElementById('chat-image').click()">Subir Imagen</button>
+     </div>
+    </div>
+   </div>
+   <div style="margin-top: 60px;"><button class="back-button" onclick="showMenu()">← Volver al Menú</button>
+   </div>
+  </div>
+  <div id="section3" class="section">
+   <h2 class="section-title">Links</h2>
+   <div class="links-content">
+    <div class="social-links"><a href="https://open.spotify.com/user/313kci42qjlkmj3abe3s2dwy23l4?si=9929309aa93e44bf" target="_blank" rel="noopener noreferrer" class="social-button spotify"> <span class="social-text">Spotify</span> </a> <a href="https://www.instagram.com/lio_cortes_/" target="_blank" rel="noopener noreferrer" class="social-button instagram"> <span class="social-text">Instagram</span> </a> <a href="https://x.com/Hekra__" target="_blank" rel="noopener noreferrer" class="social-button twitter"> <span class="social-text">Twitter</span> </a> <a href="https://www.tiktok.com/@_hekra_" target="_blank" rel="noopener noreferrer" class="social-button tiktok"> <span class="social-text">TikTok</span> </a>
+    </div>
+   </div>
+   <div style="margin-top: 60px;"><button class="back-button" onclick="showMenu()">← Volver al Menú</button>
+   </div>
+  </div><!-- Modal para zoom de imágenes -->
+  <div id="image-modal" class="image-modal" onclick="closeImageModal()"><span class="close-modal" onclick="closeImageModal()">×</span> <img id="modal-image" class="modal-image" src="" alt="Imagen ampliada">
+  </div>
   <script>
-    // Movimiento del cursor blanco
-    const cursor = document.querySelector('.cursor');
-    document.addEventListener('mousemove', e => {
-      cursor.style.left = e.pageX + 'px';
-      cursor.style.top = e.pageY + 'px';
+    const defaultConfig = {
+      background_color: "#000000",
+      text_color: "#ffffff",
+      button_border_color: "#ffffff",
+      button_hover_color: "rgba(255, 255, 255, 0.3)",
+      cursor_color: "#ffffff",
+      font_family: "Arial",
+      font_size: 16,
+      main_title: "Configuracion",
+      button_1_text: "Valorant",
+      button_2_text: "Minecraft",
+      button_3_text: "Links",
+      section_1_title: "Valorant",
+      section_2_title: "Minecraft",
+      section_3_title: "Links"
+    };
+
+    async function onConfigChange(config) {
+      const fontFamily = config.font_family || defaultConfig.font_family;
+      const fontSize = config.font_size || defaultConfig.font_size;
+      const backgroundColor = config.background_color || defaultConfig.background_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const buttonBorderColor = config.button_border_color || defaultConfig.button_border_color;
+      const cursorColor = config.cursor_color || defaultConfig.cursor_color;
+
+      document.body.style.fontFamily = `${fontFamily}, sans-serif`;
+      document.body.style.background = backgroundColor;
+
+      const cursor = document.getElementById('custom-cursor');
+      if (cursor) cursor.style.background = cursorColor;
+
+      const mainTitle = document.getElementById('main-title');
+      if (mainTitle) {
+        mainTitle.textContent = config.main_title || defaultConfig.main_title;
+        mainTitle.style.color = textColor;
+        mainTitle.style.fontSize = `${fontSize * 3}px`;
+        mainTitle.style.fontFamily = `${fontFamily}, sans-serif`;
+      }
+
+      const buttons = document.querySelectorAll('.nav-button');
+      const buttonTexts = [
+        config.button_1_text || defaultConfig.button_1_text,
+        config.button_2_text || defaultConfig.button_2_text,
+        config.button_3_text || defaultConfig.button_3_text
+      ];
+
+      buttons.forEach((button, index) => {
+        button.textContent = buttonTexts[index];
+        button.style.color = textColor;
+        button.style.borderColor = buttonBorderColor;
+        button.style.fontSize = `${fontSize * 1.5}px`;
+        button.style.fontFamily = `${fontFamily}, sans-serif`;
+      });
+
+      const sectionTitles = document.querySelectorAll('.section-title');
+      const sectionTitleTexts = [
+        config.section_1_title || defaultConfig.section_1_title,
+        config.section_2_title || defaultConfig.section_2_title,
+        config.section_3_title || defaultConfig.section_3_title
+      ];
+
+      sectionTitles.forEach((title, index) => {
+        title.textContent = sectionTitleTexts[index];
+        title.style.color = textColor;
+        title.style.fontSize = `${fontSize * 3.5}px`;
+        title.style.fontFamily = `${fontFamily}, sans-serif`;
+      });
+
+      const sectionContents = document.querySelectorAll('.section-content');
+      sectionContents.forEach(content => {
+        content.style.color = textColor;
+        content.style.fontSize = `${fontSize * 1.25}px`;
+        content.style.fontFamily = `${fontFamily}, sans-serif`;
+      });
+
+      const backButtons = document.querySelectorAll('.back-button');
+      backButtons.forEach(button => {
+        button.style.color = textColor;
+        button.style.borderColor = buttonBorderColor;
+        button.style.fontSize = `${fontSize * 1.125}px`;
+        button.style.fontFamily = `${fontFamily}, sans-serif`;
+      });
+    }
+
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [
+          {
+            get: () => config.background_color || defaultConfig.background_color,
+            set: (value) => {
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.text_color || defaultConfig.text_color,
+            set: (value) => {
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.button_border_color || defaultConfig.button_border_color,
+            set: (value) => {
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ button_border_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.cursor_color || defaultConfig.cursor_color,
+            set: (value) => {
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ cursor_color: value });
+              }
+            }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (value) => {
+            if (window.elementSdk) {
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (value) => {
+            if (window.elementSdk) {
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }
+      };
+    }
+
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ["main_title", config.main_title || defaultConfig.main_title],
+        ["button_1_text", config.button_1_text || defaultConfig.button_1_text],
+        ["button_2_text", config.button_2_text || defaultConfig.button_2_text],
+        ["button_3_text", config.button_3_text || defaultConfig.button_3_text],
+        ["section_1_title", config.section_1_title || defaultConfig.section_1_title],
+        ["section_2_title", config.section_2_title || defaultConfig.section_2_title],
+        ["section_3_title", config.section_3_title || defaultConfig.section_3_title]
+      ]);
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+
+    // Crear estrellas
+    function createStars() {
+      const container = document.getElementById('stars-container');
+      const starCount = 150;
+
+      for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        
+        const size = Math.random() * 3 + 1;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.animationDelay = `${Math.random() * 3}s`;
+        
+        container.appendChild(star);
+      }
+    }
+
+    // Cursor personalizado
+    document.addEventListener('mousemove', (e) => {
+      const cursor = document.getElementById('custom-cursor');
+      cursor.style.left = `${e.clientX}px`;
+      cursor.style.top = `${e.clientY}px`;
     });
 
-    // Función para desplazarse a secciones
-    function scrollToSection(id) {
-      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    // Navegación
+    function showSection(sectionId) {
+      document.getElementById('main-menu').style.display = 'none';
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(sectionId).classList.add('active');
     }
+
+    function showMenu() {
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById('main-menu').style.display = 'flex';
+    }
+
+    // Funcionalidad para subir imágenes
+    document.getElementById('valorant-image').addEventListener('change', function(e) {
+      handleImageUpload(e, 'valorant-placeholder', 'Imagen de Valorant');
+    });
+
+    document.getElementById('sensitivity-image').addEventListener('change', function(e) {
+      handleImageUpload(e, 'sensitivity-placeholder', 'Imagen de Sensibilidad');
+    });
+
+    document.getElementById('chat-image').addEventListener('change', function(e) {
+      handleImageUpload(e, 'chat-placeholder', 'Imagen de Chat');
+    });
+
+    function handleImageUpload(event, placeholderId, altText) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const placeholder = document.getElementById(placeholderId);
+          placeholder.innerHTML = `<img src="${e.target.result}" class="uploaded-image clickable-image" alt="${altText}" onclick="openImageModal('${e.target.result}')">`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Funciones para el modal de zoom
+    function openImageModal(imageSrc) {
+      const modal = document.getElementById('image-modal');
+      const modalImage = document.getElementById('modal-image');
+      modalImage.src = imageSrc;
+      modal.style.display = 'flex';
+    }
+
+    function closeImageModal() {
+      const modal = document.getElementById('image-modal');
+      modal.style.display = 'none';
+    }
+
+    // Función para copiar el texto de configuración
+    function copyConfigText() {
+      const configText = document.querySelector('.config-text');
+      configText.select();
+      configText.setSelectionRange(0, 99999);
+      
+      try {
+        document.execCommand('copy');
+        const copyButton = document.querySelector('.copy-button');
+        const originalText = copyButton.textContent;
+        copyButton.textContent = '¡Copiado!';
+        setTimeout(() => {
+          copyButton.textContent = originalText;
+        }, 2000);
+      } catch (err) {
+        console.error('Error al copiar:', err);
+      }
+    }
+
+    createStars();
   </script>
-</body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'997f3f2986d61fe4',t:'MTc2MjA0MDUyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
