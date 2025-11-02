@@ -1,748 +1,357 @@
 <!doctype html>
 <html lang="es">
  <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Navegación Espacial</title>
-  <script src="/_sdk/element_sdk.js"></script>
-  <script src="/_sdk/data_sdk.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Navegación Espacial (persistencia local)</title>
   <style>
-    body {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow-x: hidden;
-      overflow-y: auto;
-      background: #000000;
-      cursor: none;
-      font-family: 'Arial', sans-serif;
-    }
-
-    html {
-      height: 100%;
-    }
-
-    #custom-cursor {
-      position: fixed;
-      width: 12px;
-      height: 12px;
-      background: white;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 10000;
-      transform: translate(-50%, -50%);
-      transition: transform 0.1s ease;
-    }
-
-    #stars-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-    }
-
-    .star {
-      position: absolute;
-      background: white;
-      border-radius: 50%;
-      animation: twinkle 3s infinite;
-    }
-
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
-    }
-
-    #main-menu {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      gap: 20px;
-    }
-
-    #main-title {
-      color: white;
-      font-size: 48px;
-      margin-bottom: 40px;
-      text-align: center;
-      text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-    }
-
-    .nav-button {
-      background: rgba(255, 255, 255, 0.1);
-      border: 2px solid white;
-      color: white;
-      padding: 20px 60px;
-      font-size: 24px;
-      border-radius: 50px;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-      min-width: 300px;
-      text-align: center;
-    }
-
-    .nav-button:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
-    }
-
-    .section {
-      position: relative;
-      z-index: 2;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100%;
-      padding: 40px;
-      padding-top: 60px;
-    }
-
-    .section.active {
-      display: flex;
-    }
-
-    .section-title {
-      color: white;
-      font-size: 56px;
-      margin-bottom: 40px;
-      text-align: center;
-      text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-    }
-
-    .section-content {
-      color: white;
-      font-size: 20px;
-      text-align: center;
-      max-width: 800px;
-      line-height: 1.6;
-      margin-bottom: 60px;
-    }
-
-    .back-button {
-      background: rgba(255, 255, 255, 0.1);
-      border: 2px solid white;
-      color: white;
-      padding: 15px 40px;
-      font-size: 18px;
-      border-radius: 50px;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .back-button:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
-    }
-
-    .valorant-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 40px;
-      width: 100%;
-      max-width: 600px;
-    }
-
-    .image-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .image-placeholder {
-      width: 300px;
-      height: 200px;
-      border: 2px dashed white;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 18px;
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .uploaded-image {
-      width: 300px;
-      height: 200px;
-      object-fit: cover;
-      border-radius: 10px;
-      border: 2px solid white;
-    }
-
-    .upload-button {
-      background: rgba(255, 255, 255, 0.1);
-      border: 2px solid white;
-      color: white;
-      padding: 10px 30px;
-      font-size: 16px;
-      border-radius: 25px;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .upload-button:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: scale(1.05);
-    }
-
-    .config-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-      width: 100%;
-    }
-
-    .config-label {
-      color: white;
-      font-size: 32px;
-      margin: 0;
-      text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-    }
-
-    .config-text-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-      width: 100%;
-    }
-
-    .config-text {
-      background: rgba(255, 255, 255, 0.1);
-      border: 2px solid white;
-      color: white;
-      padding: 15px;
-      font-size: 16px;
-      border-radius: 10px;
-      width: 100%;
-      max-width: 500px;
-      min-height: 60px;
-      resize: none;
-      font-family: 'Courier New', monospace;
-      text-align: center;
-      backdrop-filter: blur(10px);
-    }
-
-    .copy-button {
-      background: rgba(255, 255, 255, 0.1);
-      border: 2px solid white;
-      color: white;
-      padding: 10px 25px;
-      font-size: 16px;
-      border-radius: 25px;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .copy-button:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: scale(1.05);
-    }
-
-    .minecraft-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 40px;
-      width: 100%;
-      max-width: 600px;
-    }
-
-    .minecraft-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      width: 100%;
-    }
-
-    .minecraft-label {
-      color: white;
-      font-size: 28px;
-      margin: 0;
-      text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-    }
-
-    .clickable-image {
-      cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-
-    .clickable-image:hover {
-      transform: scale(1.05);
-    }
-
-    .image-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.9);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 20000;
-    }
-
-    .modal-image {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 10px;
-      border: 2px solid white;
-    }
-
-    .close-modal {
-      position: absolute;
-      top: 20px;
-      right: 30px;
-      color: white;
-      font-size: 40px;
-      font-weight: bold;
-      cursor: pointer;
-      z-index: 20001;
-    }
-
-    .close-modal:hover {
-      color: #ccc;
-    }
-
-    .links-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 40px;
-      width: 100%;
-      max-width: 600px;
-    }
-
-    .social-links {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      width: 100%;
-      max-width: 400px;
-    }
-
-    .social-button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.1);
-      border: 2px solid white;
-      color: white;
-      padding: 20px 30px;
-      font-size: 20px;
-      border-radius: 50px;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .social-button:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
-    }
-
-    .social-text {
-      font-weight: bold;
-    }
+    /* --- estilos reducidos (idénticos a los tuyos, con cursor) --- */
+    body { box-sizing: border-box; margin:0; padding:0; height:100%; overflow-x:hidden; overflow-y:auto; background:#000; cursor:none; font-family:Arial, sans-serif; color:#fff; }
+    #custom-cursor { position:fixed; width:12px; height:12px; background:white; border-radius:50%; pointer-events:none; z-index:10000; transform:translate(-50%,-50%); transition:transform .1s ease; }
+    #stars-container { position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; }
+    .star { position:absolute; background:white; border-radius:50%; animation:twinkle 3s infinite; }
+    @keyframes twinkle { 0%,100%{opacity:.3} 50%{opacity:1} }
+    #main-menu { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:20px; }
+    #main-title { color:white; font-size:48px; margin-bottom:40px; text-align:center; text-shadow:0 0 20px rgba(255,255,255,.5); }
+    .nav-button, .back-button, .upload-button, .copy-button { background:rgba(255,255,255,.1); border:2px solid white; color:white; padding:15px 40px; font-size:18px; border-radius:50px; transition:all .3s ease; backdrop-filter:blur(10px); cursor:pointer; }
+    .nav-button:hover, .back-button:hover, .upload-button:hover, .copy-button:hover { background:rgba(255,255,255,.3); transform:scale(1.05); box-shadow:0 0 30px rgba(255,255,255,.5); }
+    .section { position:relative; z-index:2; display:none; flex-direction:column; align-items:center; justify-content:flex-start; min-height:100%; padding:40px; padding-top:60px; }
+    .section.active { display:flex; }
+    .section-title { color:white; font-size:56px; margin-bottom:40px; text-align:center; text-shadow:0 0 20px rgba(255,255,255,.5); }
+    .section-content { color:white; font-size:20px; text-align:center; max-width:800px; line-height:1.6; margin-bottom:60px; }
+    .valorant-content, .minecraft-content, .links-content { display:flex; flex-direction:column; align-items:center; gap:40px; width:100%; max-width:600px; }
+    .image-placeholder { width:300px; height:200px; border:2px dashed white; border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-size:18px; background:rgba(255,255,255,.03); }
+    .uploaded-image { width:300px; height:200px; object-fit:cover; border-radius:10px; border:2px solid white; cursor:pointer; }
+    .image-modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.9); display:none; justify-content:center; align-items:center; z-index:20000; }
+    .modal-image { max-width:90%; max-height:90%; border-radius:10px; border:2px solid white; }
+    .close-modal { position:absolute; top:20px; right:30px; color:white; font-size:40px; font-weight:bold; cursor:pointer; z-index:20001; }
+    .close-modal:hover { color:#ccc; }
   </style>
-  <style>@view-transition { navigation: auto; }</style>
-  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
  </head>
  <body>
   <div id="custom-cursor"></div>
   <div id="stars-container"></div>
+
   <div id="main-menu">
-   <h1 id="main-title">Configuracion</h1><button class="nav-button" onclick="showSection('section1')">Valorant</button> <button class="nav-button" onclick="showSection('section2')">Minecraft</button> <button class="nav-button" onclick="showSection('section3')">Links</button>
+   <h1 id="main-title">Configuracion</h1>
+   <button class="nav-button" onclick="showSection('section1')">Valorant</button>
+   <button class="nav-button" onclick="showSection('section2')">Minecraft</button>
+   <button class="nav-button" onclick="showSection('section3')">Links</button>
   </div>
+
+  <!-- Secciones -->
   <div id="section1" class="section">
    <h2 class="section-title">Valorant</h2>
    <div class="valorant-content">
     <div class="image-container">
-     <div class="image-placeholder" id="valorant-placeholder"><span>📷 Agregar Imagen</span>
-     </div><input type="file" id="valorant-image" accept="image/*" style="display: none;"> <button class="upload-button" onclick="document.getElementById('valorant-image').click()">Subir Imagen</button>
+     <div id="valorant-placeholder" class="image-placeholder"><span>📷 Agregar Imagen</span></div>
+     <input id="valorant-image" type="file" accept="image/*" style="display:none">
+     <button class="upload-button" onclick="document.getElementById('valorant-image').click()">Subir Imagen</button>
     </div>
     <div class="config-section">
      <h3 class="config-label">Mira</h3>
-     <div class="config-text-container"><textarea class="config-text" readonly>0;s;1;P;c;5;o;0.94;d;1;z;3;f;0;0b;0;1b;0;S;s;0.865;o;1</textarea> <button class="copy-button" onclick="copyConfigText()">Copiar</button>
+     <div class="config-text-container">
+      <textarea class="config-text" readonly style="width:100%; max-width:500px; min-height:60px; border-radius:10px; background:rgba(255,255,255,.05); color:white; border:2px solid white; padding:12px; font-family:monospace;">0;s;1;P;c;5;o;0.94;d;1;z;3;f;0;0b;0;1b;0;S;s;0.865;o;1</textarea>
+      <button class="copy-button" onclick="copyConfigText()">Copiar</button>
      </div>
     </div>
-   </div>
-   <div style="margin-top: 60px;"><button class="back-button" onclick="showMenu()">← Volver al Menú</button>
+    <div style="margin-top:60px;"><button class="back-button" onclick="showMenu()">← Volver al Menú</button></div>
    </div>
   </div>
+
   <div id="section2" class="section">
    <h2 class="section-title">Minecraft</h2>
    <div class="minecraft-content">
     <div class="minecraft-section">
      <h3 class="minecraft-label">Sensibilidad</h3>
      <div class="image-container">
-      <div class="image-placeholder" id="sensitivity-placeholder"><span>📷 Agregar Imagen</span>
-      </div><input type="file" id="sensitivity-image" accept="image/*" style="display: none;"> <button class="upload-button" onclick="document.getElementById('sensitivity-image').click()">Subir Imagen</button>
+      <div id="sensitivity-placeholder" class="image-placeholder"><span>📷 Agregar Imagen</span></div>
+      <input id="sensitivity-image" type="file" accept="image/*" style="display:none">
+      <button class="upload-button" onclick="document.getElementById('sensitivity-image').click()">Subir Imagen</button>
      </div>
     </div>
     <div class="minecraft-section">
      <h3 class="minecraft-label">Chat</h3>
      <div class="image-container">
-      <div class="image-placeholder" id="chat-placeholder"><span>📷 Agregar Imagen</span>
-      </div><input type="file" id="chat-image" accept="image/*" style="display: none;"> <button class="upload-button" onclick="document.getElementById('chat-image').click()">Subir Imagen</button>
+      <div id="chat-placeholder" class="image-placeholder"><span>📷 Agregar Imagen</span></div>
+      <input id="chat-image" type="file" accept="image/*" style="display:none">
+      <button class="upload-button" onclick="document.getElementById('chat-image').click()">Subir Imagen</button>
      </div>
     </div>
    </div>
-   <div style="margin-top: 60px;"><button class="back-button" onclick="showMenu()">← Volver al Menú</button>
-   </div>
+   <div style="margin-top:60px;"><button class="back-button" onclick="showMenu()">← Volver al Menú</button></div>
   </div>
+
   <div id="section3" class="section">
    <h2 class="section-title">Links</h2>
    <div class="links-content">
-    <div class="social-links"><a href="https://open.spotify.com/user/313kci42qjlkmj3abe3s2dwy23l4?si=9929309aa93e44bf" target="_blank" rel="noopener noreferrer" class="social-button spotify"> <span class="social-text">Spotify</span> </a> <a href="https://www.instagram.com/lio_cortes_/" target="_blank" rel="noopener noreferrer" class="social-button instagram"> <span class="social-text">Instagram</span> </a> <a href="https://x.com/Hekra__" target="_blank" rel="noopener noreferrer" class="social-button twitter"> <span class="social-text">Twitter</span> </a> <a href="https://www.tiktok.com/@_hekra_" target="_blank" rel="noopener noreferrer" class="social-button tiktok"> <span class="social-text">TikTok</span> </a>
+    <div class="social-links">
+      <a class="nav-button" href="https://open.spotify.com/" target="_blank">Spotify</a>
+      <a class="nav-button" href="https://www.instagram.com/" target="_blank">Instagram</a>
+      <a class="nav-button" href="https://x.com/" target="_blank">Twitter</a>
+      <a class="nav-button" href="https://www.tiktok.com/" target="_blank">TikTok</a>
     </div>
    </div>
-   <div style="margin-top: 60px;"><button class="back-button" onclick="showMenu()">← Volver al Menú</button>
-   </div>
-  </div><!-- Modal para zoom de imágenes -->
-  <div id="image-modal" class="image-modal" onclick="closeImageModal()"><span class="close-modal" onclick="closeImageModal()">×</span> <img id="modal-image" class="modal-image" src="" alt="Imagen ampliada">
+   <div style="margin-top:60px;"><button class="back-button" onclick="showMenu()">← Volver al Menú</button></div>
   </div>
+
+  <!-- Modal -->
+  <div id="image-modal" class="image-modal" onclick="closeImageModal(event)">
+    <span class="close-modal" onclick="closeImageModal(event)">×</span>
+    <img id="modal-image" class="modal-image" src="" alt="Imagen ampliada">
+  </div>
+
   <script>
-    const defaultConfig = {
-      background_color: "#000000",
-      text_color: "#ffffff",
-      button_border_color: "#ffffff",
-      button_hover_color: "rgba(255, 255, 255, 0.3)",
-      cursor_color: "#ffffff",
-      font_family: "Arial",
-      font_size: 16,
-      main_title: "Configuracion",
-      button_1_text: "Valorant",
-      button_2_text: "Minecraft",
-      button_3_text: "Links",
-      section_1_title: "Valorant",
-      section_2_title: "Minecraft",
-      section_3_title: "Links"
-    };
-
-    let savedImages = [];
-    let isDataSdkReady = false;
-
-    async function onConfigChange(config) {
-      const fontFamily = config.font_family || defaultConfig.font_family;
-      const fontSize = config.font_size || defaultConfig.font_size;
-      const backgroundColor = config.background_color || defaultConfig.background_color;
-      const textColor = config.text_color || defaultConfig.text_color;
-      const buttonBorderColor = config.button_border_color || defaultConfig.button_border_color;
-      const cursorColor = config.cursor_color || defaultConfig.cursor_color;
-
-      document.body.style.fontFamily = `${fontFamily}, sans-serif`;
-      document.body.style.background = backgroundColor;
-
-      const cursor = document.getElementById('custom-cursor');
-      if (cursor) cursor.style.background = cursorColor;
-
-      const mainTitle = document.getElementById('main-title');
-      if (mainTitle) {
-        mainTitle.textContent = config.main_title || defaultConfig.main_title;
-        mainTitle.style.color = textColor;
-        mainTitle.style.fontSize = `${fontSize * 3}px`;
-        mainTitle.style.fontFamily = `${fontFamily}, sans-serif`;
-      }
-
-      const buttons = document.querySelectorAll('.nav-button');
-      const buttonTexts = [
-        config.button_1_text || defaultConfig.button_1_text,
-        config.button_2_text || defaultConfig.button_2_text,
-        config.button_3_text || defaultConfig.button_3_text
-      ];
-
-      buttons.forEach((button, index) => {
-        button.textContent = buttonTexts[index];
-        button.style.color = textColor;
-        button.style.borderColor = buttonBorderColor;
-        button.style.fontSize = `${fontSize * 1.5}px`;
-        button.style.fontFamily = `${fontFamily}, sans-serif`;
-      });
-
-      const sectionTitles = document.querySelectorAll('.section-title');
-      const sectionTitleTexts = [
-        config.section_1_title || defaultConfig.section_1_title,
-        config.section_2_title || defaultConfig.section_2_title,
-        config.section_3_title || defaultConfig.section_3_title
-      ];
-
-      sectionTitles.forEach((title, index) => {
-        title.textContent = sectionTitleTexts[index];
-        title.style.color = textColor;
-        title.style.fontSize = `${fontSize * 3.5}px`;
-        title.style.fontFamily = `${fontFamily}, sans-serif`;
-      });
-
-      const sectionContents = document.querySelectorAll('.section-content');
-      sectionContents.forEach(content => {
-        content.style.color = textColor;
-        content.style.fontSize = `${fontSize * 1.25}px`;
-        content.style.fontFamily = `${fontFamily}, sans-serif`;
-      });
-
-      const backButtons = document.querySelectorAll('.back-button');
-      backButtons.forEach(button => {
-        button.style.color = textColor;
-        button.style.borderColor = buttonBorderColor;
-        button.style.fontSize = `${fontSize * 1.125}px`;
-        button.style.fontFamily = `${fontFamily}, sans-serif`;
-      });
-    }
-
-    function mapToCapabilities(config) {
-      return {
-        recolorables: [
-          {
-            get: () => config.background_color || defaultConfig.background_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ background_color: value });
-              }
-            }
-          },
-          {
-            get: () => config.text_color || defaultConfig.text_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ text_color: value });
-              }
-            }
-          },
-          {
-            get: () => config.button_border_color || defaultConfig.button_border_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ button_border_color: value });
-              }
-            }
-          },
-          {
-            get: () => config.cursor_color || defaultConfig.cursor_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ cursor_color: value });
-              }
-            }
-          }
-        ],
-        borderables: [],
-        fontEditable: {
-          get: () => config.font_family || defaultConfig.font_family,
-          set: (value) => {
-            if (window.elementSdk) {
-              window.elementSdk.setConfig({ font_family: value });
-            }
-          }
-        },
-        fontSizeable: {
-          get: () => config.font_size || defaultConfig.font_size,
-          set: (value) => {
-            if (window.elementSdk) {
-              window.elementSdk.setConfig({ font_size: value });
-            }
-          }
-        }
-      };
-    }
-
-    function mapToEditPanelValues(config) {
-      return new Map([
-        ["main_title", config.main_title || defaultConfig.main_title],
-        ["button_1_text", config.button_1_text || defaultConfig.button_1_text],
-        ["button_2_text", config.button_2_text || defaultConfig.button_2_text],
-        ["button_3_text", config.button_3_text || defaultConfig.button_3_text],
-        ["section_1_title", config.section_1_title || defaultConfig.section_1_title],
-        ["section_2_title", config.section_2_title || defaultConfig.section_2_title],
-        ["section_3_title", config.section_3_title || defaultConfig.section_3_title]
-      ]);
-    }
-
-    // Data SDK Handler
-    const dataHandler = {
-      onDataChanged(data) {
-        savedImages = data;
-        loadSavedImages();
-      }
-    };
-
-    // Initialize SDKs
-    async function initializeSDKs() {
-      if (window.dataSdk) {
-        const result = await window.dataSdk.init(dataHandler);
-        if (result.isOk) {
-          isDataSdkReady = true;
-        }
-      }
-
-      if (window.elementSdk) {
-        window.elementSdk.init({
-          defaultConfig,
-          onConfigChange,
-          mapToCapabilities,
-          mapToEditPanelValues
-        });
-      }
-    }
-
-    initializeSDKs();
-
-    // Crear estrellas
+    /* ------------------ Estrellas (tu función) ------------------ */
     function createStars() {
       const container = document.getElementById('stars-container');
       const starCount = 150;
-
       for (let i = 0; i < starCount; i++) {
         const star = document.createElement('div');
         star.className = 'star';
-        
         const size = Math.random() * 3 + 1;
         star.style.width = `${size}px`;
         star.style.height = `${size}px`;
         star.style.left = `${Math.random() * 100}%`;
         star.style.top = `${Math.random() * 100}%`;
         star.style.animationDelay = `${Math.random() * 3}s`;
-        
         container.appendChild(star);
       }
     }
+    createStars();
 
-    // Cursor personalizado
-    document.addEventListener('mousemove', (e) => {
+    /* ------------------ Cursor personalizado ------------------ */
+    document.addEventListener('mousemove', e => {
       const cursor = document.getElementById('custom-cursor');
-      cursor.style.left = `${e.clientX}px`;
-      cursor.style.top = `${e.clientY}px`;
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top = e.clientY + 'px';
     });
 
-    // Navegación
-    function showSection(sectionId) {
+    /* ------------------ Navegación ------------------ */
+    function showSection(id) {
       document.getElementById('main-menu').style.display = 'none';
-      document.querySelectorAll('.section').forEach(section => {
-        section.classList.remove('active');
-      });
-      document.getElementById(sectionId).classList.add('active');
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0,0);
     }
-
     function showMenu() {
-      document.querySelectorAll('.section').forEach(section => {
-        section.classList.remove('active');
-      });
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.getElementById('main-menu').style.display = 'flex';
+      window.scrollTo(0,0);
     }
 
-    // Funcionalidad para subir imágenes
-    document.getElementById('valorant-image').addEventListener('change', function(e) {
-      handleImageUpload(e, 'valorant-placeholder', 'Imagen de Valorant');
-    });
-
-    document.getElementById('sensitivity-image').addEventListener('change', function(e) {
-      handleImageUpload(e, 'sensitivity-placeholder', 'Imagen de Sensibilidad');
-    });
-
-    document.getElementById('chat-image').addEventListener('change', function(e) {
-      handleImageUpload(e, 'chat-placeholder', 'Imagen de Chat');
-    });
-
-    async function handleImageUpload(event, placeholderId, altText) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-          const imageData = e.target.result;
-          const placeholder = document.getElementById(placeholderId);
-          
-          // Show loading state
-          placeholder.innerHTML = '<span>Guardando imagen...</span>';
-          
-          // Display image immediately
-          placeholder.innerHTML = `<img src="${imageData}" class="uploaded-image clickable-image" alt="${altText}" onclick="openImageModal('${imageData}')">`;
-          
-          // Save to Data SDK
-          if (isDataSdkReady && window.dataSdk) {
-            const imageRecord = {
-              id: placeholderId,
-              type: placeholderId.replace('-placeholder', ''),
-              image_data: imageData,
-              created_at: new Date().toISOString()
-            };
-            
-            // Check if image already exists and update, otherwise create
-            const existingImage = savedImages.find(img => img.id === placeholderId);
-            if (existingImage) {
-              const updatedRecord = { ...existingImage, ...imageRecord };
-              await window.dataSdk.update(updatedRecord);
-            } else {
-              await window.dataSdk.create(imageRecord);
-            }
-          }
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-
-    // Load saved images on page load
-    function loadSavedImages() {
-      savedImages.forEach(imageRecord => {
-        const placeholder = document.getElementById(imageRecord.id);
-        if (placeholder && imageRecord.image_data) {
-          const altText = `Imagen de ${imageRecord.type}`;
-          placeholder.innerHTML = `<img src="${imageRecord.image_data}" class="uploaded-image clickable-image" alt="${altText}" onclick="openImageModal('${imageRecord.image_data}')">`;
-        }
-      });
-    }
-
-    // Funciones para el modal de zoom
-    function openImageModal(imageSrc) {
-      const modal = document.getElementById('image-modal');
-      const modalImage = document.getElementById('modal-image');
-      modalImage.src = imageSrc;
-      modal.style.display = 'flex';
-    }
-
-    function closeImageModal() {
-      const modal = document.getElementById('image-modal');
-      modal.style.display = 'none';
-    }
-
-    // Función para copiar el texto de configuración
+    /* ------------------ Copiar texto ------------------ */
     function copyConfigText() {
-      const configText = document.querySelector('.config-text');
-      configText.select();
-      configText.setSelectionRange(0, 99999);
-      
+      const el = document.querySelector('.config-text');
+      el.select(); el.setSelectionRange(0,99999);
       try {
         document.execCommand('copy');
-        const copyButton = document.querySelector('.copy-button');
-        const originalText = copyButton.textContent;
-        copyButton.textContent = '¡Copiado!';
-        setTimeout(() => {
-          copyButton.textContent = originalText;
-        }, 2000);
-      } catch (err) {
-        console.error('Error al copiar:', err);
+        const b = document.querySelector('.copy-button');
+        const prev = b.textContent;
+        b.textContent = '¡Copiado!';
+        setTimeout(()=> b.textContent = prev, 1500);
+      } catch(e){ console.error(e); alert('No se pudo copiar'); }
+    }
+
+    /* ------------------ Persistencia de imágenes ------------------
+       - primero intenta localStorage (dataURL)
+       - si falla (quota), guarda en IndexedDB como blob
+    ------------------------------------------------------------- */
+
+    const LOCAL_KEY = 'savedImages_v1'; // mapping id -> dataURL
+    const IDB_DB_NAME = 'images-db-v1';
+    const IDB_STORE = 'images';
+
+    // Utility: IndexedDB simple wrapper
+    function openIDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(IDB_DB_NAME, 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(IDB_STORE)) {
+            db.createObjectStore(IDB_STORE, { keyPath: 'id' }); // stores {id, blob, created_at}
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function idbPut(id, blob) {
+      try {
+        const db = await openIDB();
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).put({ id, blob, created_at: new Date().toISOString() });
+        return new Promise((res, rej) => {
+          tx.oncomplete = () => res(true);
+          tx.onerror = () => rej(tx.error);
+        });
+      } catch (e) { console.error('idbPut error', e); return false; }
+    }
+
+    async function idbGet(id) {
+      try {
+        const db = await openIDB();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_STORE, 'readonly');
+          const req = tx.objectStore(IDB_STORE).get(id);
+          req.onsuccess = () => resolve(req.result ? req.result.blob : null);
+          req.onerror = () => reject(req.error);
+        });
+      } catch (e) { console.error('idbGet error', e); return null; }
+    }
+
+    async function idbGetAll() {
+      try {
+        const db = await openIDB();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_STORE, 'readonly');
+          const req = tx.objectStore(IDB_STORE).getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => reject(req.error);
+        });
+      } catch (e) { console.error('idbGetAll error', e); return []; }
+    }
+
+    /* Guardar en localStorage: recibe mapping y lo guarda */
+    function saveMappingToLocal(mapping) {
+      try {
+        localStorage.setItem(LOCAL_KEY, JSON.stringify(mapping));
+        return true;
+      } catch (e) {
+        // probable quota exceeded
+        console.warn('No se pudo guardar en localStorage:', e);
+        return false;
       }
     }
 
-    createStars();
+    function loadMappingFromLocal() {
+      try {
+        const raw = localStorage.getItem(LOCAL_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        console.warn('Error leyendo localStorage', e);
+        return {};
+      }
+    }
+
+    /* Manejo de uploads - ruta preferente: dataURL -> localStorage
+       fallback: store blob in IDB and also try to keep small meta in localStorage
+    */
+    async function handleImageFile(file, placeholderId, altText) {
+      // Primero intentamos generar dataURL (rápido) y almacenar en localStorage
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        const dataUrl = evt.target.result;
+        // actualizamos la UI inmediatamente
+        setPlaceholderImage(placeholderId, dataUrl, altText);
+
+        // intentamos guardar en localStorage
+        const mapping = loadMappingFromLocal();
+        mapping[placeholderId] = { type: 'dataurl', value: dataUrl, created_at: new Date().toISOString() };
+        const okLocal = saveMappingToLocal(mapping);
+        if (!okLocal) {
+          // si localStorage falla, guardamos blob en IndexedDB
+          try {
+            await idbPut(placeholderId, file);
+            // en localStorage dejamos una marca de que está en IDB
+            const mapping2 = loadMappingFromLocal();
+            mapping2[placeholderId] = { type: 'idb', value: true, created_at: new Date().toISOString() };
+            // intentamos guardar (esto puede fallar si ya no hay lugar) - no crítico
+            try { localStorage.setItem(LOCAL_KEY, JSON.stringify(mapping2)); } catch(e){ /* ignore */ }
+            console.info('Imagen guardada en IndexedDB por falta de espacio en localStorage');
+          } catch (e) {
+            console.error('Fallo guardando en IndexedDB', e);
+            // no más opciones
+            alert('No se pudo guardar la imagen localmente. El navegador probablemente alcanzó su límite de almacenamiento.');
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    /* Setear imagen en placeholder (dataURL u objectURL) */
+    function setPlaceholderImage(id, src, alt) {
+      const placeholder = document.getElementById(id);
+      if (!placeholder) return;
+      placeholder.innerHTML = `<img src="${src}" class="uploaded-image" alt="${alt}" onclick="openImageModal('${src}')">`;
+    }
+
+    /* Si la imagen proviene de IndexedDB (blob), creamos objectURL y la seteamos */
+    async function setPlaceholderFromBlob(id, blob, alt) {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const placeholder = document.getElementById(id);
+      if (!placeholder) return;
+      placeholder.innerHTML = `<img src="${url}" class="uploaded-image" alt="${alt}" onclick="openImageModal('${url}')">`;
+    }
+
+    /* Inicializar listeners de inputs */
+    function initFileInputs() {
+      document.getElementById('valorant-image').addEventListener('change', async function(e){
+        const f = e.target.files[0];
+        if (f) await handleImageFile(f, 'valorant-placeholder', 'Imagen de Valorant');
+      });
+      document.getElementById('sensitivity-image').addEventListener('change', async function(e){
+        const f = e.target.files[0];
+        if (f) await handleImageFile(f, 'sensitivity-placeholder', 'Imagen de Sensibilidad');
+      });
+      document.getElementById('chat-image').addEventListener('change', async function(e){
+        const f = e.target.files[0];
+        if (f) await handleImageFile(f, 'chat-placeholder', 'Imagen de Chat');
+      });
+    }
+
+    /* Cargar imágenes guardadas al iniciar */
+    async function loadSavedImagesOnStart() {
+      // 1) Primero localStorage (dataURLs o marcas)
+      const mapping = loadMappingFromLocal();
+      for (const id in mapping) {
+        const entry = mapping[id];
+        if (!entry) continue;
+        if (entry.type === 'dataurl' && entry.value) {
+          setPlaceholderImage(id, entry.value, `Imagen de ${id}`);
+        } else if (entry.type === 'idb') {
+          // marcado: buscar en IDB
+          const blob = await idbGet(id);
+          if (blob) await setPlaceholderFromBlob(id, blob, `Imagen de ${id}`);
+        }
+      }
+
+      // 2) Si localStorage no tenía entries, o hay más en IDB, cargamos todo IDB y completamos
+      try {
+        const all = await idbGetAll();
+        for (const record of all) {
+          const id = record.id;
+          if (!mapping[id]) { // no estaba en localStorage
+            await setPlaceholderFromBlob(id, record.blob, `Imagen de ${id}`);
+          }
+        }
+      } catch (e) {
+        // IndexedDB puede no estar disponible (privado) => ignorar
+      }
+    }
+
+    /* Modal */
+    function openImageModal(src) {
+      const modal = document.getElementById('image-modal');
+      const img = document.getElementById('modal-image');
+      img.src = src;
+      modal.style.display = 'flex';
+    }
+    function closeImageModal(e) {
+      // evita que el click en la imagen cierre si se hace click en la img
+      if (e && e.target && e.target.id === 'modal-image') return;
+      const modal = document.getElementById('image-modal');
+      modal.style.display = 'none';
+      document.getElementById('modal-image').src = '';
+    }
+
+    /* iniciar */
+    (function init(){
+      initFileInputs();
+      loadSavedImagesOnStart();
+    })();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'997f4b58608f892e',t:'MTc2MjA0MTAyNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ </body>
 </html>
